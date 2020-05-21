@@ -47,14 +47,17 @@ class App extends React.Component {
 		formData.append('upload_preset', 'testPreset');
 		axios.post(
 			'https://api.cloudinary.com/v1_1/rohanm789/image/upload',
-			formData
-		)
-			.then(res => {
-				console.log(res.data);
-			})
-			.catch(err => {
-				console.log(err);
-			})
+			formData, {
+			onUploadProgress: progressEvent => {
+				console.log(Math.round(progressEvent.loaded / progressEvent.total) * 100);
+			}
+		}
+
+		).then(res => {
+			console.log(res.data);
+		}).catch(err => {
+			console.log(err);
+		})
 	}
 
 	// On file upload (click the upload button) 

@@ -7,7 +7,7 @@ class CroppedImage extends React.Component {
 
     constructor(props) {
         super(props);
-        this.myRef = React.createRef();
+        this.imageRef = React.createRef();
     }
 
     cropImage = async (url, width, height) => {
@@ -23,18 +23,8 @@ class CroppedImage extends React.Component {
                 // let's store the width and height of our image
                 const inputWidth = inputImage.naturalWidth;
                 const inputHeight = inputImage.naturalHeight;
-
-                // get the aspect ratio of the input image
-                // const inputImageAspectRatio = inputWidth / inputHeight;
-
-                // if it's bigger than our target aspect ratio
                 let outputWidth = width;
                 let outputHeight = height;
-                // if (inputImageAspectRatio > aspectRatio) {
-                // 	outputWidth = inputHeight * aspectRatio;
-                // } else if (inputImageAspectRatio < aspectRatio) {
-                // 	outputHeight = inputWidth / aspectRatio;
-                // }
 
                 // calculate the position to draw the image at
                 const outputX = (outputWidth - inputWidth) * .5;
@@ -59,18 +49,17 @@ class CroppedImage extends React.Component {
 
     }
     render() {
-        console.log(this.props);
-        {
-            this.cropImage(this.props.file.src, this.props.image.width, this.props.image.height)
-                .then(canvas => {
-                    let dataURL = canvas.toDataURL();
-                    this.myRef.current.src = dataURL;
-                    this.props.getCroppedImage(dataURL);
-                })
-        }
+
+        this.cropImage(this.props.file.src, this.props.image.width, this.props.image.height)
+            .then(canvas => {
+                let dataURL = canvas.toDataURL();
+                this.imageRef.current.src = dataURL;
+                this.props.getCroppedImage(dataURL);
+            });
+
         return (
             <div className="image-container">
-                <img ref={this.myRef} />
+                <img ref={this.imageRef} alt={this.props.image.type} />
                 <h2>{this.props.image.type}</h2>
             </div>
         );
