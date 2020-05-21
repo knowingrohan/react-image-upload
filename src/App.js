@@ -30,6 +30,7 @@ class App extends React.Component {
 					imgBlob: tempImg,
 					imageDimensions: true
 				});
+				this.uploadBtn.removeAttribute("disabled");
 			} else {
 				this.setState({
 					imageDimensions: false
@@ -47,12 +48,7 @@ class App extends React.Component {
 		formData.append('upload_preset', 'testPreset');
 		axios.post(
 			'https://api.cloudinary.com/v1_1/rohanm789/image/upload',
-			formData, {
-			onUploadProgress: progressEvent => {
-				console.log(Math.round(progressEvent.loaded / progressEvent.total) * 100);
-			}
-		}
-
+			formData
 		).then(res => {
 			console.log(res.data);
 		}).catch(err => {
@@ -60,22 +56,18 @@ class App extends React.Component {
 		})
 	}
 
-	// On file upload (click the upload button) 
 	handleFileUpload = async () => {
-
+		this.uploadBtn.setAttribute("disabled", "disabled");
 		for (let i = 0; i < this.imgArr.length; i++) {
 			this.uploadFileToServer(this.imgArr[i])
 		}
-
 	};
 
-
 	renderButtons = () => {
-
 		if (this.state.imageDimensions) {
 			return (
 				<div>
-					<button onClick={this.handleFileUpload}>
+					<button ref={uploadBtn => this.uploadBtn = uploadBtn}  onClick={this.handleFileUpload}>
 						Upload Images To Server
           			</button>
 				</div>
@@ -95,7 +87,6 @@ class App extends React.Component {
 			this.imgArr = []
 		}
 		this.imgArr.push(url)
-		console.log(this.imgArr);
 	}
 
 	render() {
