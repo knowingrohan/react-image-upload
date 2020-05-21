@@ -1,0 +1,14 @@
+.img-container {
+    width: 100%;
+}
+
+.img-container img {
+    /* This is important */
+    width: 100%;
+  }
+
+.img-preview {
+   
+    
+    margin-left: 10px;
+}
