@@ -1,48 +1,77 @@
 import React from "react";
-import Cropper from "cropperjs";
-import "cropperjs/dist/cropper.min.css";
-import "./croppedImage.css";
 
 class CroppedImage extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            imageDestination: ""
-        };
-        this.cropper = null;
-        this.imageElement = React.createRef();
-
+    state = {
+        imgBlob: null
     }
 
-    componentDidMount() {
-        this.cropper = new Cropper(this.imageElement.current, {
-            aspectRatio: 16/9,
-            autoCropArea: 0,
-            strict: false,
-            guides: false,
-            highlight: false,
-            dragCrop: false,
-            cropBoxMovable: false,
-            cropBoxResizable: false,
-            crop: () => {
-                const canvas = this.cropper.getCroppedCanvas({ width: "100", height: "50" });
-                this.setState({ imageDestination: canvas.toDataURL("image/png") });
-            }
+    constructor(props) {
+        super(props);
+        this.myRef = React.createRef();
+    }
+
+    cropImage = async (url, width, height) => {
+
+        return await new Promise(resolve => {
+
+            // this image will hold our source image data
+            const inputImage = new Image();
+
+            // we want to wait for our image to load
+            inputImage.onload = () => {
+
+                // let's store the width and height of our image
+                const inputWidth = inputImage.naturalWidth;
+                const inputHeight = inputImage.naturalHeight;
+
+                // get the aspect ratio of the input image
+                // const inputImageAspectRatio = inputWidth / inputHeight;
+
+                // if it's bigger than our target aspect ratio
+                let outputWidth = width;
+                let outputHeight = height;
+                // if (inputImageAspectRatio > aspectRatio) {
+                // 	outputWidth = inputHeight * aspectRatio;
+                // } else if (inputImageAspectRatio < aspectRatio) {
+                // 	outputHeight = inputWidth / aspectRatio;
+                // }
+
+                // calculate the position to draw the image at
+                const outputX = (outputWidth - inputWidth) * .5;
+                const outputY = (outputHeight - inputHeight) * .5;
+
+                // create a canvas that will present the output image
+                const outputImage = document.createElement('canvas');
+
+                // set it to the same size as the image
+                outputImage.width = outputWidth;
+                outputImage.height = outputHeight;
+
+                // draw our image at position 0, 0 on the canvas
+                const ctx = outputImage.getContext('2d');
+                ctx.drawImage(inputImage, outputX, outputY);
+                resolve(outputImage);
+            };
+
+            // start loading our image
+            inputImage.src = url;
         });
-    }
 
-    componentDidUpdate() {
-        // this.cropper.destroy();
     }
-
     render() {
         console.log(this.props);
+        {
+            this.cropImage(this.props.file.src, this.props.image.width, this.props.image.height)
+                .then(canvas => {
+                    let dataURL = canvas.toDataURL();
+                    this.myRef.current.src = dataURL;
+                    this.props.getCroppedImage(dataURL);
+                })
+        }
         return (
-            <div>
-                <div className="img-container" >
-                    <img ref={this.imageElement} src={this.props.image.file.src} alt="Source" />
-                </div>
-                <img src={this.state.imageDestination} className="img-preview" alt="Destination" />
+            <div className="image-container">
+                <img ref={this.myRef} />
+                <h2>{this.props.image.type}</h2>
             </div>
         );
     }

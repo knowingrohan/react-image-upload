@@ -1,19 +1,19 @@
-// import axios from 'axios';
-
 import React from 'react';
 import CroppedImage from './components/CroppedImage';
+import axios from 'axios';
+import imgData from './imageData';
 
-var imgData = [{
-	id: 1,
-	type: 'horizontal',
-	width: 755,
-	height: 450
-}
-]
+
 class App extends React.Component {
+
+	constructor(props) {
+		super(props)
+		this.imgArr = []
+	}
 
 	state = {
 		imageDimensions: false,
+		imgBlob: null,
 		selectedFile: null
 	};
 
@@ -26,7 +26,8 @@ class App extends React.Component {
 		tempImg.onload = () => {
 			if (tempImg.width === 1024 && tempImg.height === 1024) {
 				this.setState({
-					selectedFile: tempImg,
+					selectedFile: img,
+					imgBlob: tempImg,
 					imageDimensions: true
 				});
 			} else {
@@ -39,36 +40,40 @@ class App extends React.Component {
 
 	};
 
+	uploadFileToServer(imgUri) {
+
+		const formData = new FormData();
+		formData.append('file', imgUri)
+		formData.append('upload_preset', 'testPreset');
+		axios.post(
+			'https://api.cloudinary.com/v1_1/rohanm789/image/upload',
+			formData
+		)
+			.then(res => {
+				console.log(res.data);
+			})
+			.catch(err => {
+				console.log(err);
+			})
+	}
+
 	// On file upload (click the upload button) 
-	onFileUpload = () => {
+	handleFileUpload = async () => {
 
-		// Create an object of formData 
-		// const formData = new FormData();
+		for (let i = 0; i < this.imgArr.length; i++) {
+			this.uploadFileToServer(this.imgArr[i])
+		}
 
-		// Update the formData object 
-		// formData.append(
-		// 	"myFile",
-		// 	this.state.selectedFile,
-		// 	this.state.selectedFile.name
-		// );
-
-		// Details of the uploaded file 
-		console.log(this.state.selectedFile);
-
-		// Request made to the backend api 
-		// Send formData object 
-		// axios.post("api/uploadfile", formData);
 	};
 
-	// File content to be displayed after 
-	// file upload is complete 
-	fileData = () => {
+
+	renderButtons = () => {
 
 		if (this.state.imageDimensions) {
 			return (
 				<div>
-					<button onClick={this.onFileUpload}>
-						Upload!
+					<button onClick={this.handleFileUpload}>
+						Upload Images To Server
           			</button>
 				</div>
 
@@ -76,27 +81,46 @@ class App extends React.Component {
 		} else {
 			return (
 				<div>
-					<br />
-					<h4>Upload correct image size</h4>
+					<h5>Upload image with dimesnions 1024 x 1024</h5>
 				</div>
 			);
 		}
 	};
 
+	getCroppedImage = (url) => {
+		if (this.imgArr.length === 4) {
+			this.imgArr = []
+		}
+		this.imgArr.push(url)
+		console.log(this.imgArr);
+	}
+
 	render() {
 
 		let croppedImages = imgData.map((item) => {
-			item.file = this.state.selectedFile
-			return <CroppedImage key={item.id} image={item} />
+			return (<CroppedImage
+				key={item.id}
+				file={this.state.imgBlob}
+				image={item}
+				getCroppedImage={this.getCroppedImage}
+			/>)
 		});
 
 		return (
 			<div>
-				<input type="file" onChange={this.onFileChange} />
-				<div className="resolution-container">
-					{this.state.selectedFile && croppedImages}
+				<div className="button-container">
+					<input
+						style={{ display: 'none' }}
+						type="file"
+						onChange={this.onFileChange}
+						ref={fileInput => this.fileInput = fileInput} />
+					<button className="choose-file" onClick={() => this.fileInput.click()}>Choose File</button>
+					{this.renderButtons()}
 				</div>
-				{this.fileData()}
+				<div className="resolution-container" >
+					{this.state.imageDimensions && croppedImages}
+				</div>
+
 			</div >
 		);
 	}
