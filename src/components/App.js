@@ -1,7 +1,7 @@
 import React from 'react';
-import CroppedImage from './components/CroppedImage';
+import CroppedImage from './CroppedImage';
 import axios from 'axios';
-import imgData from './imageData';
+import imgData from '../imageData';
 
 
 class App extends React.Component {
@@ -17,7 +17,6 @@ class App extends React.Component {
 		selectedFile: null
 	};
 
-	// On file select (from the pop up) 
 	onFileChange = event => {
 		let img = event.target.files[0];
 
